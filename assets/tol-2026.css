@@ -1,0 +1,672 @@
+/* ==========================================================================
+   Tree of Life — 2026 refresh overrides
+   Loaded AFTER chrome.css. Brand palette from TOL_Brand Guide_2026_R1.pdf p.8.
+   ========================================================================== */
+
+:root {
+  --tol26-sand:       #FFFBF2;   /* requested background */
+  --tol26-green:      #26A94B;   /* brand PRIMARY   */
+  --tol26-ink:        #1E3032;   /* brand SECONDARY */
+  --tol26-sky:        #98D3D9;   /* brand TERTIARY  */
+  --tol26-green-dark: #184C3D;   /* requested nav bar green */
+  --tol26-nav-solid:  0;         /* 0..1, driven by scroll in tol-2026.js */
+}
+
+/* ==========================================================================
+   1. SAND BACKGROUNDS — every white area becomes sand
+   ========================================================================== */
+html,
+body.site-body,
+.site-wrapper,
+main.site-content                      { background-color: var(--tol26-sand) !important; }
+
+/* white cards / panels */
+.tol-deal-foot,
+.gallery-item.gallery-item-image,
+.gallery-items .swiper-slide,
+.cover,
+.testimonial-item,
+.sg-accordion-item,
+.sgen-searchbar-dialog,
+.card, .bg-white, .sg-bg-white,
+#mm-drawer, .mm-panel, .mm-head,
+.sg-drawer                             { background-color: var(--tol26-sand) !important; }
+
+/* The app band's white comes from a PSEUDO-ELEMENT gradient, so no
+   background-color sweep can see it. !important is required because this file
+   loads before the inline <style id="tol-polish"> block that declares it. */
+#tol-app::after {
+  background-image: linear-gradient(90deg,
+    var(--tol26-sand) 0%, var(--tol26-sand) 30%,
+    rgba(255, 251, 242, .99) 38%, rgba(255, 251, 242, .95) 45%,
+    rgba(255, 251, 242, .87) 52%, rgba(255, 251, 242, .74) 59%,
+    rgba(255, 251, 242, .58) 66%, rgba(255, 251, 242, .40) 73%,
+    rgba(255, 251, 242, .24) 80%, rgba(255, 251, 242, .11) 88%,
+    rgba(255, 251, 242, 0) 100%) !important;
+}
+
+/* FAQ rows: the wrapper took sand but the button face inside kept white.
+   chrome.css sets it with an !important (0,5,0) rule, hence the long selector. */
+#iwpvl .sg-accordion > .sg-accordion-item > .sg-accordion-header > .sg-accordion-button,
+.sg-accordion-item > .sg-accordion-header > .sg-accordion-button {
+  background-color: var(--tol26-sand) !important;
+}
+
+/* The chevron is a ::after background-image that chrome.css paints WHITE for all
+   buttons and only darkens on the `.collapsed` variant — so once the face went
+   sand, the OPEN row's chevron was white-on-sand (~1.03:1) and invisible. */
+#iwpvl .sg-accordion-button:not(.collapsed)::after,
+.sg-accordion-button:not(.collapsed)::after {
+  filter: brightness(0) !important;
+}
+
+/* keep card separation now that cards and page share a tone */
+.tol-deal-foot,
+.testimonial-item,
+.sg-accordion-item                     { border: 1px solid rgba(30, 48, 50, .10); }
+
+/* the deals cards are a media block + foot; don't double-border them */
+.gallery-item.gallery-item-image        { border: none !important; }
+
+/* ==========================================================================
+   2 + 3. NAV BAR — dark green, transparent over the hero, smooth scroll fade
+   ========================================================================== */
+
+/* Always fixed so the fade is continuous (the theme used to swap
+   absolute -> fixed at a threshold, which is what made it "pop" in). */
+header.sticky-header,
+header[class*="header-alignment"] {
+  position: fixed !important;
+  top: 0; left: 0; right: 0;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  z-index: 1030;
+}
+
+/* the green plate that fades in/out */
+header.sticky-header::before,
+header[class*="header-alignment"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--tol26-green-dark);
+  opacity: var(--tol26-nav-solid, 0);
+  transition: opacity .18s linear;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* soft shadow arrives with the plate */
+header.sticky-header::after,
+header[class*="header-alignment"]::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 100%;
+  height: 18px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .18), rgba(0, 0, 0, 0));
+  opacity: var(--tol26-nav-solid, 0);
+  transition: opacity .18s linear;
+  pointer-events: none;
+}
+
+/* keep nav content above the plate */
+header.sticky-header > *,
+header[class*="header-alignment"] > *   { position: relative; z-index: 1; }
+
+/* readability + contrast on both the video and the green plate */
+header.sticky-header .sg-nav-link,
+header.sticky-header .sg-nav-item-label,
+header.sticky-header .sg-navbar-nav a   { color: #fff !important; }
+
+header.sticky-header .sg-nav-link:hover,
+header.sticky-header .sg-nav-item.active .sg-nav-link { color: var(--tol26-sky) !important; }
+
+/* outline CTA: brand green on black had poor contrast on dark green -> white */
+header.sticky-header .btn-outline-primary {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, .85) !important;
+  background-color: transparent !important;
+}
+header.sticky-header .btn-outline-primary:hover {
+  background-color: #fff !important;
+  color: var(--tol26-green-dark) !important;
+  border-color: #fff !important;
+}
+
+/* Solid CTA: sand plate + dark-green text reads on video AND on green.
+   An inline <script> injects `.site-body a.btn-primary{background:#1e3032!important}`
+   into <head> AFTER this file at tying specificity (0,2,1), so `body.site-body`
+   is needed here to win at (0,3,1). Without it ORDER NOW renders #1E3032 on the
+   #184C3D plate — a 1.40:1 shape contrast. */
+body.site-body header.sticky-header .btn-primary,
+body.site-body header.sticky-header a.btn-primary {
+  background-color: var(--tol26-sand) !important;
+  border-color: var(--tol26-sand) !important;
+  color: var(--tol26-green-dark) !important;
+  font-weight: 700;
+}
+body.site-body header.sticky-header .btn-primary:hover,
+body.site-body header.sticky-header a.btn-primary:hover {
+  background-color: #fff !important;
+  color: var(--tol26-green-dark) !important;
+}
+
+/* Keyboard focus ring. chrome.css kills the native ring with
+   `.btn:focus{box-shadow:none;outline:0}` (0,2,0, not !important), so the header
+   CTAs had NO visible focus state — WCAG 2.4.7. This is (0,3,1) and loads later,
+   so it wins. Dual ring reads on sand, on the green plate and over the video. */
+header.sticky-header .btn:focus-visible {
+  outline: 3px solid var(--tol26-ink) !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, .92) !important;
+}
+
+/* The mobile drawer holds a SECOND copy of the nav CTAs, outside
+   header.sticky-header, so the rule above cannot reach them. Sand-on-sand would
+   vanish against the drawer panel, so invert to the nav green (#fff on
+   #184C3D = 9.81:1). One ID beats the injected (0,2,1) regardless of order. */
+#mm-drawer .btn-primary,
+#mm-drawer a.btn-primary {
+  background-color: var(--tol26-green-dark) !important;
+  border-color: var(--tol26-green-dark) !important;
+  color: #fff !important;
+}
+/* the ID+!important above also outranks the theme's hover/focus, so restate them */
+#mm-drawer .btn-primary:hover,
+#mm-drawer a.btn-primary:hover,
+#mm-drawer .btn-primary:focus-visible,
+#mm-drawer a.btn-primary:focus-visible {
+  background-color: var(--tol26-green) !important;
+  border-color: var(--tol26-green) !important;
+  color: #fff !important;
+}
+#mm-drawer .btn:focus-visible {
+  outline: 3px solid var(--tol26-ink) !important;
+  outline-offset: 2px !important;
+}
+
+/* the hero sits under a fixed bar now */
+body.is-homepage [data-background-video] { margin-top: 0; }
+
+/* ==========================================================================
+   5. FOOTER — rebuilt watermark from the new vertical logo
+   ========================================================================== */
+footer#masterfoot {
+  background-color: var(--tol26-ink) !important;
+  background-image: none !important;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+footer#masterfoot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("in-pages/tol-tree-white.png");
+  background-repeat: no-repeat;
+  /* The old mark was a 2.90-aspect band, so it could fill the width AND show the
+     whole composition. This one is portrait (1100x1217), so in a landscape footer
+     those goals conflict: `cover` showed a ~34% slab and its crop axis flipped at
+     768px; plain `contain` left 2/3 of the footer bare and let the copyright bar
+     slice the root flare. Sized per band below so the mark stays a wash rather
+     than a second legible tree. Base is a safe fallback. */
+  background-position: center 30%;
+  background-size: auto 110%;
+  opacity: .04;
+  pointer-events: none;
+  z-index: 0;
+}
+footer#masterfoot > * { position: relative; z-index: 1; }
+
+/* Per-band sizing, measured against the rendered footer at each width. */
+/* Opacities are 20% below the measured values — the pattern read as too busy. */
+@media (max-width: 767px) {
+  /* portrait box — widen the band so it isn't a stripe down the middle */
+  footer#masterfoot::before { background-size: 132% auto; background-position: center 44%; opacity: .04; }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  /* the mark would sit right behind the solid footer logo here — shift it off */
+  footer#masterfoot::before { background-size: auto 104%; background-position: right -72px center; opacity: .04; }
+}
+@media (min-width: 992px) {
+  /* landscape box — size off WIDTH so it actually spreads, trunk bleeds past
+     the copyright bar instead of the root flare being sliced by it */
+  footer#masterfoot::before { background-size: 68% auto; background-position: center 26%; opacity: .036; }
+}
+
+/* new footer logo (vertical lockup) */
+.tol-footer-logo img,
+img[src*="tol-logo-vertical-white"] { max-width: 190px; height: auto; }
+
+/* ==========================================================================
+   10. PHONE CTA — drop the green box, keep the green text
+   ========================================================================== */
+#i5mfx {
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 0 4px 0 !important;
+  box-shadow: none !important;
+}
+/* The theme scopes headings with `#i9szc .sgb-component-heading { color: ... !important }`
+   (specificity 0,1,1,0) and also paints this one white with a black outline, so these
+   selectors are deliberately weightier than that. */
+html body #i5mfx.sgb-component-heading,
+html body #i5mfx.sgb-component-heading a,
+html body #i5mfx.sgb-component-heading * {
+  color: var(--tol26-green) !important;
+  font-size: 18px !important;
+  font-weight: 700;
+  text-decoration: none;
+  text-shadow: none !important;      /* drop the black outline with the box */
+  -webkit-text-stroke: 0 !important;
+}
+
+/* ==========================================================================
+   11. NEWSLETTER — true pill, single-line subtext
+   ========================================================================== */
+/* The line needs ~271px but the col-md-3 footer column is only 231px at 1024 and
+   167px at 768 — an unconditional nowrap overran the box and got clipped by
+   footer#masterfoot{overflow:hidden}. Single line only where it actually fits. */
+.tol-signup-sub {
+  font-size: 15px !important;
+  line-height: 1.4;
+}
+@media (min-width: 1200px) {
+  .tol-signup-sub { white-space: nowrap; }
+}
+/* NB: the subtext <p> lives INSIDE this form, so the form must stay a block —
+   the pill belongs on .input-group, not on the form. */
+footer .sgsc--myform { display: block !important; }
+footer .sgsc--myform .input-group {
+  border-radius: 999px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+footer .sgsc--myform .form-control {
+  border-radius: 999px 0 0 999px !important;
+  border-right: 0 !important;
+  padding-left: 20px !important;
+}
+footer .sgsc--myform .btn,
+footer .sgsc--myform .btn-outline-secondary,
+footer .sgsc--myform [type="submit"] {
+  border-radius: 0 999px 999px 0 !important;
+  padding-right: 22px !important;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   7. DEALS HEADER — centred, to match "Your Favorite Brands"
+   ========================================================================== */
+/* the heading row is a flex pair (copy | arrows) with no class of its own —
+   unstack it so the copy centres on the page like "Your Favorite Brands". */
+.sgb-component-div:has(> .tol-deals-head-l) { display: block !important; }
+
+.tol-deals-head,
+.tol-deals-head-l {
+  width: 100% !important;
+  max-width: 100% !important;
+  text-align: center !important;
+}
+.tol-deals-head-l h2,
+.tol-deals-head-l p        { text-align: center !important; margin-left: auto; margin-right: auto; }
+
+/* 13. deals arrows stay, centred under the heading (desktop and mobile) */
+.tol-deals-nav,
+.tol-deals-head-r {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100% !important;
+  margin: 14px auto 0 !important;
+}
+
+/* ==========================================================================
+   9. REVIEWS — heading shares the card rail's left edge
+   ========================================================================== */
+#iolq7 { padding-left: 15px; }
+
+/* ---- background pattern rebuilt from the NEW logo ----
+   chrome.css paints #iujbg with the OLD mark (assets/in-pages/Frame_11.webp).
+   Swap it for the new tree at low opacity, same treatment as the footer. */
+#iujbg {
+  background-image: none !important;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+#iujbg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("in-pages/tol-tree-white.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: auto 128%;
+  opacity: .05;
+  pointer-events: none;
+  z-index: 0;
+}
+#iujbg > * { position: relative; z-index: 1; }
+
+/* ---- arrows off the cards, out onto the dark band ----
+   The rail filled the band edge to edge, so there was nowhere for a 44px arrow
+   to sit except on top of a review. Inset the rail and put the arrows in the
+   gutters that opens up; the heading is inset to match so they stay aligned. */
+/* ---- arrows gone entirely; dots below the cards do the navigating ----
+   The 78px rail inset that used to make room for them is gone too, so the cards
+   go back to sharing the heading's edge. */
+#iujbg .swiper-button-prev,
+#iujbg .swiper-button-next,
+#iujbg .tol-review-nav-host > .swiper-button-prev,
+#iujbg .tol-review-nav-host > .swiper-button-next { display: none !important; }
+
+/* dots show at every width here, matching the brands section */
+#iujbg .tol-dots { display: flex !important; margin-top: 22px; }
+
+/* VIEW REVIEWS sat at #1E3032 — the section's own background colour, so it was
+   invisible. Brand green, matching every other CTA on the page. It follows the
+   rail and the dots in source order, so it lands underneath them. */
+#iujbg .sgb-component-cta .btn,
+#iujbg a.btn.btn-primary {
+  background-color: var(--tol26-green) !important;
+  border-color: var(--tol26-green) !important;
+  color: #fff !important;
+}
+#iujbg .sgb-component-cta .btn:hover,
+#iujbg a.btn.btn-primary:hover {
+  background-color: #1f8f3f !important;
+  border-color: #1f8f3f !important;
+  color: #fff !important;
+}
+#iujbg .sgb-component-cta { margin-top: 6px; }
+
+/* ==========================================================================
+   9. HEADLINES — app block matches the other section headings
+   ========================================================================== */
+.tol-app-h {
+  font-size: 46px !important;
+  line-height: 1.15 !important;
+  font-weight: 800;
+}
+/* The theme drops its other section headings to 37px here; match them so the app
+   heading keeps parity at every width (it was 34px, the smallest on the page). */
+@media (max-width: 480px) {
+  .tol-app-h { font-size: 37px !important; }
+}
+
+/* ==========================================================================
+   8 + 9. CAROUSELS — show whole cards, align rails to the headings
+   ========================================================================== */
+
+/* brand cards were cropped by a 2-up/centred/loop config; JS re-configures to
+   3-up on desktop. These rules stop the clipping and even the card heights. */
+#gallery-items-i4p1l .swiper-wrapper { align-items: stretch !important; }
+#gallery-items-i4p1l .swiper-slide   { height: auto !important; display: flex; }
+#gallery-items-i4p1l .swiper-slide > * { width: 100%; }
+#gallery-items-i4p1l .brand-card     { height: 100% !important; }
+/* keep the copy column from crowding at the narrower 3-up width.
+   .cover must FILL the remainder: a fixed 38% left 62+38 short of the card's
+   real width, so ~9px of the card's own dark panel showed as a strip down the
+   right edge of every box. */
+#gallery-items-i4p1l .brand-card .inner { flex: 0 0 62% !important; padding: 20px !important; }
+#gallery-items-i4p1l .brand-card .cover {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  padding: 16px !important;
+}
+
+/* Arrows off in this section at every width — they sat on top of the cards.
+   The rail loops and autoplays instead, with dots below as the affordance. */
+#gallery-items-i4p1l .swiper-button-next,
+#gallery-items-i4p1l .swiper-button-prev,
+#gallery-items-i4p1l ~ * .swiper-button-next,
+#gallery-items-i4p1l ~ * .swiper-button-prev { display: none !important; }
+#gallery-items-i4p1l .brand-card .info .h4 { font-size: 21px !important; }
+#gallery-items-i4p1l .brand-card .info p   { font-size: 14px !important; line-height: 1.45; }
+
+/* 576-767px used to run 2-up, which left the copy column at 169-205px and the
+   blurb at 10-13 lines. The rail goes 1-up there instead (see tol-2026.js).
+   Below 600 chrome.css stacks the card itself, and our 62/38 flex-basis then
+   applied to HEIGHT, opening ~200px of bare dark panel under the SHOP NOW pill —
+   so release the basis wherever the card is stacked. */
+@media (max-width: 600px) {
+  #gallery-items-i4p1l .brand-card .inner,
+  #gallery-items-i4p1l .brand-card .cover { flex: 0 0 auto !important; }
+}
+
+/* the reveal animation can leave this stranded at opacity:0 */
+.tol-hand-img img { opacity: 1 !important; }
+
+/* reviews rail shares the heading's left/right edge */
+#testimonial-items-iq8d8 { overflow: hidden; }
+.testimonial-item { height: auto; }
+
+/* Each slide carried a theme `margin-left:5px` IN ADDITION to the `margin-right`
+   Swiper writes for spaceBetween, so three slides came out 15px wider than the
+   rail and the last card was clipped. Swiper's own margin-right is left alone. */
+#testimonial-items-iq8d8 .swiper-slide,
+#gallery-items-i4p1l .swiper-slide,
+#gallery-items-izxi4 .swiper-slide {
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+}
+
+/* Same reason: horizontal padding on the .swiper container itself is excluded
+   from Swiper's slide-width maths, so it shifts the rail and clips the last card. */
+#testimonial-items-iq8d8,
+#gallery-items-i4p1l,
+#gallery-items-izxi4 { padding-left: 0 !important; padding-right: 0 !important; }
+
+/* nav arrows: brand green, never over the card content */
+.swiper-button-next, .swiper-button-prev,
+[class*="carousel-nav"] button { background-color: var(--tol26-green) !important; }
+
+/* ==========================================================================
+   MOBILE
+   ========================================================================== */
+@media (max-width: 991.98px) {
+  /* 12. centre logo + hamburger in the bar (they sat ~10px high) */
+  header.sticky-header nav.sg-navbar {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 62px;
+    padding-top: 22px !important;
+    padding-bottom: 12px !important;
+  }
+  header.sticky-header .sg-navbar-brand,
+  header.sticky-header .mm-hamburger,
+  header.sticky-header [class*="hamburger"] { align-self: center !important; }
+}
+
+@media (max-width: 767.98px) {
+  /* 14 / 16 / 17. centre section copy + CTAs */
+  .tol-m-center,
+  .tol-m-center h1, .tol-m-center h2, .tol-m-center h3,
+  .tol-m-center h4, .tol-m-center h5, .tol-m-center p,
+  .tol-m-center .sgb-component-text,
+  .tol-m-center .sgb-component-heading { text-align: center !important; }
+
+  /* .tol-app-badges is a flex container with no justify-content, so the store
+     badges stayed flex-start — inherited text-align can't move flex items. */
+  .tol-m-center .sgb-component-cta,
+  .tol-m-center .ctas,
+  .tol-m-center .tol-app-badges { display: flex; justify-content: center; }
+
+  /* bullets were hugging the left edge while their text centred */
+  .tol-m-center ul,
+  .tol-m-center ol {
+    list-style-position: inside;
+    padding-left: 0 !important;
+    text-align: center !important;
+  }
+
+  /* all CTAs in centred blocks share one width */
+  .tol-m-center .btn {
+    min-width: 230px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* 17. app heading wraps to 3 lines, centred (size handled above for parity) */
+  .tol-app-h { text-align: center !important; }
+  .tol-app-nl { display: block; }   /* forces "Life App" onto its own line */
+
+  /* 15. bigger, better-centred phone/hand image.
+     Scale ONLY the <img> — putting the wrapper in the same selector list applied
+     1.18 twice (1.39x) and pushed the phone off-centre. The arm bleeds right into
+     the section's existing overflow clip so the PHONE lands on the centre line. */
+  .tol-hand-img {
+    max-width: 400px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+  .tol-hand-img img {
+    width: 130% !important;
+    max-width: none !important;
+    margin-left: 17% !important;
+    margin-right: -47% !important;
+    height: auto;
+  }
+
+  /* 18. breathing room at the right edge */
+  .section > .container,
+  .sgb-component.container { padding-left: 18px !important; padding-right: 18px !important; }
+
+  /* ...but the hero must stay full-bleed. That 18px was leaving a sand gap down
+     both sides of the video. Bleed the hero back out to the viewport edges and
+     restore its own inner padding so the copy is not against the edge. */
+  #iuf2 {
+    margin-left: -18px !important;
+    margin-right: -18px !important;
+    width: calc(100% + 36px) !important;
+    max-width: none !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* The tol-polish block already owns these gutters at (1,1,0), so a bare-ID
+     rule here was dead code. It leaves the deals and brands rails at 20px but
+     the reviews rail at 10px — a visible 10px misalignment between the three.
+     Two IDs (2,0,0) to outrank it, reviews only. */
+  #iujbg #testimonial-items-iq8d8 {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+  }
+
+  /* 19 + 20. arrows off on mobile — dots take over (added by tol-2026.js) */
+  #gallery-items-i4p1l .swiper-button-next,
+  #gallery-items-i4p1l .swiper-button-prev,
+  #testimonial-items-iq8d8 .swiper-button-next,
+  #testimonial-items-iq8d8 .swiper-button-prev,
+  .tol-hide-arrows-m .swiper-button-next,
+  .tol-hide-arrows-m .swiper-button-prev,
+  .tol-hide-arrows-m [class*="-nav-prev"],
+  .tol-hide-arrows-m [class*="-nav-next"] { display: none !important; }
+
+  /* tol-2026.js lifts the reviews arrows OUT of the rail, so the descendant
+     rules above stop matching them — hide them here too (item 20). */
+  #iujbg .tol-review-nav-host > .swiper-button-prev,
+  #iujbg .tol-review-nav-host > .swiper-button-next { display: none !important; }
+
+  /* 7. the deals block carries margin:0 20px while the brands heading sits at
+     10px — match them so the two headlines share a centre line. */
+  .sgb-component-div:has(> .tol-deals-head-l) {
+    width: calc(100% - 20px) !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* 13. centre the deals arrows */
+  .tol-deals-nav,
+  .tol-deals-head-r { justify-content: center !important; width: 100% !important; }
+
+  /* the rail and heading already share the 20px inset on mobile */
+  #iolq7 { padding-left: 0; text-align: center !important; }
+}
+
+/* brands has no arrows at any width now, so its dots show at every width */
+#gallery-items-i4p1l ~ .tol-dots,
+.sgb-component-gallery:has(#gallery-items-i4p1l) .tol-dots { display: flex !important; }
+
+/* dot pagination injected for mobile carousels */
+.tol-dots {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 14px auto 0;
+}
+/* The visible dot stays 8px, but the BUTTON is 24x24 so it meets the WCAG 2.5.8
+   minimum target size — the dots are now the only control for these rails. */
+.tol-dots button {
+  width: 24px; height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tol-dots button::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: rgba(30, 48, 50, .28);
+  transition: background .2s ease, width .2s ease;
+}
+.tol-dots button[aria-current="true"]::before { background: var(--tol26-green); width: 22px; }
+.tol-dots button:focus-visible { outline: 2px solid var(--tol26-green); outline-offset: 2px; border-radius: 999px; }
+/* on the dark reviews band */
+.tol-dots--onDark button { background: none; }
+.tol-dots--onDark button::before { background: rgba(255, 255, 255, .32); }
+.tol-dots--onDark button[aria-current="true"]::before { background: var(--tol26-green); }
+
+@media (max-width: 767.98px) {
+  .tol-dots { display: flex; }
+}
+
+/* ==========================================================================
+   21. AGE GATE
+   ========================================================================== */
+/* Swapping the colour token alone was NOT enough: this ::before also carries
+   opacity:.5 over the gate's own rgba(0,0,0,.9), so the composite stayed dark —
+   which is exactly what the user reported. Force full strength so the scrim is
+   the real brand green. White 70px heading on #26A94B = 3.06:1 (passes AA large). */
+.sg_age-verification::before {
+  background-color: var(--tol26-green) !important;
+  opacity: 1 !important;
+}
+
+.sg_age-verification h2 {
+  text-shadow: none !important;      /* drop the black outline */
+  -webkit-text-stroke: 0 !important;
+  filter: none !important;
+}
+
+.sg_age-verification .btn,
+.sg_age-verification .btn--yes,
+.sg_age-verification .btn--no {
+  border-radius: 999px !important;   /* pill */
+  padding: 12px 34px !important;
+  font-weight: 700;
+}
+.sg_age-verification .btn--yes {
+  background-color: var(--tol26-ink) !important;
+  border-color: var(--tol26-ink) !important;
+  color: #fff !important;
+}
+/* Sand fill on the now-opaque green scrim is 2.96:1 — 0.036 short of the 3:1
+   non-text threshold (SC 1.4.11). Darkening the existing 3px border instead of
+   the fill takes the boundary to 4.50:1 and leaves text contrast at 13.34:1. */
+.sg_age-verification .btn--no {
+  background-color: var(--tol26-sand) !important;
+  border-color: var(--tol26-ink) !important;
+  color: var(--tol26-ink) !important;
+}
